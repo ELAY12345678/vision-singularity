@@ -1,4 +1,8 @@
 from rest_framework import serializers
+from .models import Restaurant
 
-class HelloSerializer(serializers.Serializer):
-    message = serializers.CharField()
+class RestaurantSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Restaurant
+        fields = '__all__'
+

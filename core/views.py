@@ -1,10 +1,20 @@
-from django.http import JsonResponse
-from .serializers import HelloSerializer  # ← import your new serializer clearly
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .models import Restaurant
+from .serializers import RestaurantSerializer
 
-def hello_world(request):
-    data = {'message': 'Hello, Vision Singularity!'}
-    serializer = HelloSerializer(data=data)
-    serializer.is_valid(raise_exception=True)
-    return JsonResponse(serializer.data)
+@api_view(['GET', 'POST'])
+def restaurant_list(request):
+    if request.method == 'GET':
+        restaurants = Restaurant.objects.all()
+        serializer = RestaurantSerializer(restaurants, many=True)
+        return Response(serializer.data)
+
+    if request.method == 'POST':
+        serializer = RestaurantSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
 
 
