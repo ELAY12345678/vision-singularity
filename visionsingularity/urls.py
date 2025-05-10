@@ -1,10 +1,10 @@
 from django.contrib import admin
 from django.urls import path
-from core.views import restaurant_list, restaurant_detail  # Clearly import new detail view
+from core.views import RestaurantList, RestaurantDetail  # class-based views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('restaurants/', restaurant_list),
-    path('restaurants/<int:pk>/', restaurant_detail),  # Clearly handles single-item CRUD
+    path('restaurants/', RestaurantList.as_view()),
+    path('restaurants/<int:pk>/', RestaurantDetail.as_view()),
 ]
 
