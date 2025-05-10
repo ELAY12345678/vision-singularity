@@ -1,3 +1,10 @@
-from django.shortcuts import render
+from django.http import JsonResponse
+from .serializers import HelloSerializer  # ← import your new serializer clearly
 
-# Create your views here.
+def hello_world(request):
+    data = {'message': 'Hello, Vision Singularity!'}
+    serializer = HelloSerializer(data=data)
+    serializer.is_valid(raise_exception=True)
+    return JsonResponse(serializer.data)
+
+
