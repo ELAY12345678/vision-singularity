@@ -114,3 +114,13 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Django REST Framework global settings
+REST_FRAMEWORK = {
+    # Send and accept JSON by default …
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        # …and also serve the HTML “Browsable API” so you can test in the browser
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ]
+}
