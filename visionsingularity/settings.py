@@ -123,17 +123,17 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.JSONRenderer',
         # …and also serve the HTML “Browsable API” so you can test in the browser
         'rest_framework.renderers.BrowsableAPIRenderer',
-    ]
-}
-
-REST_FRAMEWORK.update({
+    ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticatedOrReadOnly",
     ],
-})
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
+    ],
+}
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),

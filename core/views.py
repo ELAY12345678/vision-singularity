@@ -4,6 +4,7 @@ from rest_framework import status, generics, permissions
 from .models import Restaurant, Table, ServiceCall
 from .serializers import RestaurantSerializer, TableSerializer, ServiceCallSerializer
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 
 class RestaurantList(APIView):
     def get(self, request):
@@ -42,8 +43,22 @@ class TableList(generics.ListAPIView):                 # GET only
     serializer_class   = TableSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-class ServiceCallListCreate(generics.ListCreateAPIView):  # GET + POST
-    queryset           = ServiceCall.objects.all()
-    serializer_class   = ServiceCallSerializer
+class ServiceCallListCreate(generics.ListCreateAPIView):
+    queryset = ServiceCall.objects.all()
+    serializer_class = ServiceCallSerializer
     permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['status']  # allow filtering by status
+
+class ServiceCallDetail(generics.RetrieveUpdateAPIView):
+    queryset = ServiceCall.objects.all()
+    serializer_class = ServiceCallSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def patch(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.status = request.data.get('status', instance.status)
+        instance.save()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
