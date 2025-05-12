@@ -1,10 +1,24 @@
 from django.contrib import admin
 from django.urls import path
-from core.views import RestaurantList, RestaurantDetail  # class-based views
+from core.views import RestaurantList, RestaurantDetail
+
+# ADD these two imports
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+
+    # ADD these two JWT endpoints
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
+    # existing restaurant routes
     path('restaurants/', RestaurantList.as_view()),
     path('restaurants/<int:pk>/', RestaurantDetail.as_view()),
 ]
+
+
 
