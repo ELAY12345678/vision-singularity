@@ -1,8 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
-from .models import Restaurant
-from .serializers import RestaurantSerializer
+from rest_framework import status, generics, permissions
+from .models import Restaurant, Table, ServiceCall
+from .serializers import RestaurantSerializer, TableSerializer, ServiceCallSerializer
 from django.shortcuts import get_object_or_404
 
 class RestaurantList(APIView):
@@ -36,4 +36,14 @@ class RestaurantDetail(APIView):
         restaurant = get_object_or_404(Restaurant, pk=pk)
         restaurant.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+class TableList(generics.ListAPIView):                 # GET only
+    queryset           = Table.objects.all()
+    serializer_class   = TableSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+class ServiceCallListCreate(generics.ListCreateAPIView):  # GET + POST
+    queryset           = ServiceCall.objects.all()
+    serializer_class   = ServiceCallSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
