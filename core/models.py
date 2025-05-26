@@ -32,5 +32,8 @@ class ServiceCall(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     status     = models.CharField(max_length=20, default='pending')  # pending/handled
 
+    class Meta:
+        ordering = ['-created_at']  # Clearly added ordering here (newest first)
+
     def __str__(self):
         return f"{self.table} – {self.event_type} @ {self.created_at:%H:%M:%S}"
