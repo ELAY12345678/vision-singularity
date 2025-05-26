@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "core",
+    "channels"
 ]
 
 MIDDLEWARE = [
@@ -58,6 +59,8 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "visionsingularity.wsgi.application"
+
+ASGI_APPLICATION = "visionsingularity.asgi.application"
 
 
 # Database
