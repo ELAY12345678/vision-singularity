@@ -5,6 +5,8 @@ from .models import Restaurant, Table, ServiceCall
 from .serializers import RestaurantSerializer, TableSerializer, ServiceCallSerializer
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 class RestaurantList(APIView):
     def get(self, request):
@@ -50,6 +52,24 @@ class ServiceCallListCreate(generics.ListCreateAPIView):
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['status']  # allow filtering by status
 
+    def perform_create(self, serializer):
+        service_call = serializer.save()
+            
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            "waiters_group",
+            {
+                "type": "send_service_call",
+                "content": {
+                    "id": service_call.id,
+                    "table": service_call.table.number,
+                    "event_type": service_call.event_type,
+                    "status": service_call.status,
+                    "created_at": str(service_call.created_at)
+                }
+            }
+        )
+
 class ServiceCallDetail(generics.RetrieveUpdateAPIView):
     queryset = ServiceCall.objects.all()
     serializer_class = ServiceCallSerializer
@@ -61,4 +81,5 @@ class ServiceCallDetail(generics.RetrieveUpdateAPIView):
         instance.save()
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
+
 
