@@ -1,6 +1,7 @@
-from django.urls import re_path
+from django.urls import path
 from .consumers import EventConsumer
 
 websocket_urlpatterns = [
-    re_path(r'ws/events/$', EventConsumer.as_asgi()),
+    path("ws/events/", EventConsumer.as_asgi()),
 ]
+

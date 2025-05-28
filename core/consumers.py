@@ -1,5 +1,5 @@
-from channels.generic.websocket import AsyncWebsocketConsumer
 import json
+from channels.generic.websocket import AsyncWebsocketConsumer
 
 class EventConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -11,4 +11,8 @@ class EventConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_discard("waiters_group", self.channel_name)
 
     async def send_service_call(self, event):
-        await self.send(text_data=json.dumps(event["content"]))
+        event.pop("type", None)
+        await self.send(text_data=json.dumps(event))
+
+
+

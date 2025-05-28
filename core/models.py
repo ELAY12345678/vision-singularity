@@ -1,4 +1,8 @@
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 
 class Restaurant(models.Model):
     name = models.CharField(max_length=100)
@@ -37,3 +41,21 @@ class ServiceCall(models.Model):
 
     def __str__(self):
         return f"{self.table} – {self.event_type} @ {self.created_at:%H:%M:%S}"
+    
+@receiver(post_save, sender=ServiceCall)
+def send_service_call_event(sender, instance, created, **kwargs):
+    if created:
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            "waiters_group",
+            {
+                "type": "send_service_call",
+                "content": {
+                    "id": instance.id,
+                    "table": instance.table.number,
+                    "event_type": instance.event_type,
+                    "status": instance.status,
+                    "created_at": str(instance.created_at),
+                }
+            }
+        )
