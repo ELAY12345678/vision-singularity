@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path
-from core.views import RestaurantList, RestaurantDetail, TableList, ServiceCallListCreate, ServiceCallDetail
+from core.views import RestaurantList, RestaurantDetail, TableList, ServiceCallListCreate, ServiceCallDetail, cv_ingest
 
 # ADD these two imports
 from rest_framework_simplejwt.views import (
@@ -17,6 +17,7 @@ urlpatterns = [
     path('tables/', TableList.as_view()),
     path('events/', ServiceCallListCreate.as_view()),
     path('events/<int:pk>/', ServiceCallDetail.as_view()),
+    path("frames/", cv_ingest),
 ]
 
 

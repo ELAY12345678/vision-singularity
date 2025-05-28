@@ -1,6 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, generics, permissions
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.decorators import api_view, parser_classes, permission_classes
 from .models import Restaurant, Table, ServiceCall
 from .serializers import RestaurantSerializer, TableSerializer, ServiceCallSerializer
 from django.shortcuts import get_object_or_404
@@ -82,4 +84,18 @@ class ServiceCallDetail(generics.RetrieveUpdateAPIView):
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
+@api_view(["POST"])
+@parser_classes([MultiPartParser, FormParser])
+@permission_classes([permissions.AllowAny])
+def cv_ingest(request):
+    """
+    Accepts one JPEG frame (multipart field name = 'frame').
+    v1  — simply ACK; v2 — plug MediaPipe & create ServiceCall.
+    """
+    if "frame" not in request.FILES:
+        return Response({"error": "No frame uploaded."},
+                        status=status.HTTP_400_BAD_REQUEST)
+
+    # TODO: MediaPipe detection in next session
+    return Response({"status": "frame received"}, status=status.HTTP_202_ACCEPTED)
 
