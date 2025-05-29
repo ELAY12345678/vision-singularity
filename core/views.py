@@ -9,6 +9,7 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from core.cv import detect_gesture
 
 class RestaurantList(APIView):
     def get(self, request):
@@ -88,14 +89,20 @@ class ServiceCallDetail(generics.RetrieveUpdateAPIView):
 @parser_classes([MultiPartParser, FormParser])
 @permission_classes([permissions.AllowAny])
 def cv_ingest(request):
-    """
-    Accepts one JPEG frame (multipart field name = 'frame').
-    v1  — simply ACK; v2 — plug MediaPipe & create ServiceCall.
-    """
-    if "frame" not in request.FILES:
-        return Response({"error": "No frame uploaded."},
+    if "frame" not in request.FILES or "table_id" not in request.POST:
+        return Response({"error": "frame and table_id required"},
                         status=status.HTTP_400_BAD_REQUEST)
 
-    # TODO: MediaPipe detection in next session
-    return Response({"status": "frame received"}, status=status.HTTP_202_ACCEPTED)
+    jpeg = request.FILES["frame"].read()
+    table_id = int(request.POST["table_id"])
 
+    gesture = detect_gesture(jpeg, table_id)
+    if gesture:
+        from core.models import Table, ServiceCall
+        from django.shortcuts import get_object_or_404
+        table = get_object_or_404(Table, pk=table_id)
+        ServiceCall.objects.create(table=table, event_type=gesture)
+        return Response({"status": "gesture detected", "gesture": gesture},
+                        status=status.HTTP_201_CREATED)
+
+    return Response({"status": "no gesture"}, status=status.HTTP_202_ACCEPTED)

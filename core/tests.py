@@ -7,6 +7,8 @@ from rest_framework.test import APIClient
 from django.test import TransactionTestCase
 from io import BytesIO
 from PIL import Image
+from django.core.files.uploadedfile import SimpleUploadedFile
+from unittest.mock import patch
 
 class TestWebSocketEvents(TransactionTestCase):
     async_capable = True          # Channels async tests
@@ -50,16 +52,59 @@ class TestWebSocketEvents(TransactionTestCase):
 
 class TestCVEndpoint(TransactionTestCase):
     def test_frame_upload_stub(self):
-        # create a 1×1 dummy JPEG in-memory
-        img_bytes = BytesIO()
-        Image.new("RGB", (1,1)).save(img_bytes, format="JPEG")
-        img_bytes.seek(0)
+        """
+        This verifies that the /frames/ endpoint:
+        1. accepts multipart data,
+        2. does NOT require authentication,
+        3. returns HTTP 202 when no gesture is detected.
+        """
+        # -- create a dummy 8×8 black JPEG entirely in-memory ------------
+        from io import BytesIO
+        from PIL import Image
+        buf = BytesIO()
+        Image.new("RGB", (8, 8), (0, 0, 0)).save(buf, format="JPEG")
+        buf.seek(0)
 
+        # -- POST to the endpoint ---------------------------------------
         client = APIClient()
-        resp = client.post("/frames/",
-                           {"frame": img_bytes},
-                           format="multipart")
-        self.assertEqual(resp.status_code, 202)
-        self.assertEqual(resp.data["status"], "frame received")
+        response = client.post(
+            "/frames/",
+            {
+                "frame": SimpleUploadedFile("blank.jpg", buf.read(), "image/jpeg"),
+                "table_id": "999",         # any fake id (view ignores for stub test)
+            },
+            format="multipart",
+        )
 
+        # -- EXPECT: accepted but no gesture ----------------------------
+        self.assertEqual(response.status_code, 202)
+        self.assertIn(response.data["status"], ["no gesture", "frame received"])
+
+
+class TestGestureDetection(TransactionTestCase):
+    def setUp(self):
+        self.restaurant = Restaurant.objects.create(name="Cam Resto")
+        self.table = Table.objects.create(restaurant=self.restaurant, number=1, camera_id="cam")
+
+    def _dummy_frame(self):
+        # put a bright pixel near top-centre to mimic “raised hand”
+        img = Image.new("RGB", (64, 64), (0,0,0))
+        img.putpixel((32, 4), (255,255,255))
+        buf = BytesIO()
+        img.save(buf, format="JPEG")
+        buf.seek(0)
+        return buf
+
+    @patch("core.views.detect_gesture", return_value="raise")
+    def test_raise_detected(self, _mock_detect_gesture):
+        client = APIClient()
+        resp = client.post(
+            "/frames/",
+            {"frame": SimpleUploadedFile("f.jpg", self._dummy_frame().read(), "image/jpeg"),
+             "table_id": str(self.table.id)},
+            format="multipart",
+        )
+        self.assertEqual(resp.status_code, 201)
+        self.assertEqual(resp.data["gesture"], "raise")
+        self.assertEqual(ServiceCall.objects.count(), 1)
 
