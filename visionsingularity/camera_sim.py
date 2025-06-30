@@ -1,18 +1,27 @@
 import cv2, requests, time
 
-camera = cv2.VideoCapture(0)
-url = "http://localhost:8000/frames/"
-table_id = 1
-fps = 2  # sends 2 images per second
+BACKEND = "http://localhost:8000/frames/"
+TABLE_ID = 1            # change to the actual Table.id you want
+FPS = 2                 # 2 frames per second
+
+cap = cv2.VideoCapture(0)
+assert cap.isOpened(), "Cannot open webcam"
 
 while True:
-    ret, frame = camera.read()
-    if not ret:
-        break
-    _, jpeg = cv2.imencode(".jpg", frame)
-    requests.post(
-        url,
-        files={"frame": ("frame.jpg", jpeg.tobytes(), "image/jpeg")},
-        data={"table_id": table_id}
-    )
-    time.sleep(1/fps)
+    ok, frame = cap.read()
+    if not ok:
+        print("Failed to capture"); break
+    _, buf = cv2.imencode(".jpg", frame, [int(cv2.IMWRITE_JPEG_QUALITY), 80])
+    try:
+        r = requests.post(
+            BACKEND,
+            files={"frame": ("f.jpg", buf.tobytes(), "image/jpeg")},
+            data={"table_id": str(TABLE_ID)},
+            timeout=2,
+        )
+        print(r.status_code, r.json())
+    except Exception as e:
+        print("POST error:", e)
+
+    time.sleep(1/FPS)
+

@@ -3,10 +3,11 @@ djangorestframework
 djangorestframework-simplejwt
 channels[redis]
 psycopg2-binary
-opencv-python-headless==4.10.0.82
 mediapipe==0.10.9
 Pillow
 requests
 gunicorn
 uvicorn[standard]
 django-filter
+numpy<2,>=1.24
+opencv-python-headless==4.10.0.82
