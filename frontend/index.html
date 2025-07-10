@@ -1,0 +1,228 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vision Singularity - Dashboard</title>
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Panel Lateral -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Forma geométrica similar a Perplexity -->
+                        <path d="M16 2L26 8V24L16 30L6 24V8L16 2Z" fill="#4ECDC4" stroke="#4ECDC4" stroke-width="1"/>
+                        <path d="M16 8L22 12V20L16 24L10 20V12L16 8Z" fill="#ffffff" stroke="#ffffff" stroke-width="1"/>
+                        <path d="M16 12L19 14V18L16 20L13 18V14L16 12Z" fill="#4ECDC4" stroke="#4ECDC4" stroke-width="1"/>
+                        <!-- Líneas internas para dar efecto cristalino -->
+                        <line x1="16" y1="2" x2="16" y2="12" stroke="#2c3e50" stroke-width="1" opacity="0.3"/>
+                        <line x1="16" y1="20" x2="16" y2="30" stroke="#2c3e50" stroke-width="1" opacity="0.3"/>
+                        <line x1="6" y1="24" x2="10" y2="20" stroke="#2c3e50" stroke-width="1" opacity="0.3"/>
+                        <line x1="22" y1="20" x2="26" y2="24" stroke="#2c3e50" stroke-width="1" opacity="0.3"/>
+                        <line x1="6" y1="8" x2="10" y2="12" stroke="#2c3e50" stroke-width="1" opacity="0.3"/>
+                        <line x1="22" y1="12" x2="26" y2="8" stroke="#2c3e50" stroke-width="1" opacity="0.3"/>
+                    </svg>
+                    <span>Vision Singularity</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul class="nav-list">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" data-section="dashboard">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" data-section="mapa">
+                            <i class="fas fa-map"></i>
+                            <span>Mapa</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" data-section="usuarios">
+                            <i class="fas fa-users"></i>
+                            <span>Usuarios</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link active" data-section="notificaciones">
+                            <i class="fas fa-bell"></i>
+                            <span>Notificaciones</span>
+                            <span class="notification-badge">3</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="nav-item">
+                    <a href="#" class="nav-link" data-section="ajustes">
+                        <i class="fas fa-cog"></i>
+                        <span>Ajustes</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Área Principal -->
+        <div class="main-content">
+            <header class="main-header">
+                <div class="header-left">
+                    <h1 class="page-title">Resumen de Notificaciones</h1>
+                </div>
+                <div class="header-right">
+                    <button class="btn btn-outline">
+                        <i class="fas fa-download"></i>
+                        Export
+                    </button>
+                    <button class="btn btn-primary">
+                        <i class="fas fa-plus"></i>
+                        Nuevo
+                    </button>
+                </div>
+            </header>
+            
+            <!-- Sección Dashboard -->
+            <div class="content-section" id="dashboard-section" style="display: none;">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">12</div>
+                        <div class="stat-label">Total Mesas</div>
+                        <div class="stat-icon">
+                            <i class="fas fa-table"></i>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">8</div>
+                        <div class="stat-label">Mesas Activas</div>
+                        <div class="stat-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">3</div>
+                        <div class="stat-label">Llamadas Pendientes</div>
+                        <div class="stat-icon">
+                            <i class="fas fa-hand-paper"></i>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">5</div>
+                        <div class="stat-label">Camareros</div>
+                        <div class="stat-icon">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="chart-section">
+                    <div class="chart-header">
+                        <h3>Llamadas por Hora</h3>
+                        <div class="chart-legend">
+                            <span class="legend-item">
+                                <span class="legend-color" style="background-color: #4ECDC4;"></span>
+                                Nuevas Llamadas
+                            </span>
+                            <span class="legend-item">
+                                <span class="legend-color" style="background-color: #FF6B6B;"></span>
+                                Atendidas
+                            </span>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="callsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sección Mapa -->
+            <div class="content-section" id="mapa-section" style="display: none;">
+                <div class="map-container">
+                    <h3>Mapa del Restaurante</h3>
+                    <div class="restaurant-map">
+                        <div class="map-grid" id="restaurant-map-grid">
+                            <!-- Las mesas se cargarán aquí dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sección Usuarios -->
+            <div class="content-section" id="usuarios-section" style="display: none;">
+                <div class="users-container">
+                    <h3>Gestión de Usuarios</h3>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre</th>
+                                    <th>Email</th>
+                                    <th>Rol</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-table-body">
+                                <!-- Los usuarios se cargarán aquí dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sección Notificaciones -->
+            <div class="content-section" id="notificaciones-section">
+                <div class="notifications-container">
+                    <div class="notifications-header">
+                        <h3>Llamadas de Servicio</h3>
+                        <div class="filter-controls">
+                            <select class="filter-select" id="status-filter">
+                                <option value="">Todos los Estados</option>
+                                <option value="pending">Pendientes</option>
+                                <option value="handled">Atendidas</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Mesa</th>
+                                    <th>Tipo de Gesto</th>
+                                    <th>Hora</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="notifications-table-body">
+                                <!-- Las notificaciones se cargarán aquí dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sección Ajustes -->
+            <div class="content-section" id="ajustes-section" style="display: none;">
+                <div class="settings-container">
+                    <h3>Configuración del Sistema</h3>
+                    <p class="placeholder-text">Sección en desarrollo...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{% static 'script-debug.js' %}"></script>
+</body>
+</html> 

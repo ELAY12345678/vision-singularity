@@ -8,6 +8,8 @@ from django.test import TransactionTestCase
 from io import BytesIO
 from PIL import Image
 from django.core.files.uploadedfile import SimpleUploadedFile
+from rest_framework.test import APITestCase, APIClient
+from django.utils import timezone
 from unittest.mock import patch
 
 class TestWebSocketEvents(TransactionTestCase):
@@ -107,4 +109,20 @@ class TestGestureDetection(TransactionTestCase):
         self.assertEqual(resp.status_code, 201)
         self.assertEqual(resp.data["gesture"], "raise")
         self.assertEqual(ServiceCall.objects.count(), 1)
+
+class TestHandleEndpoint(APITestCase):
+    def setUp(self):
+        self.restaurant = Restaurant.objects.create(name="R", address="x", phone="y")
+        self.table = Table.objects.create(restaurant=self.restaurant, number=1, camera_id="cam")
+        self.call = ServiceCall.objects.create(table=self.table, event_type="hand_raise")
+        self.client.force_authenticate(User.objects.create_superuser("a","a@a.com","pass"))
+
+    def test_handle(self):
+        r = self.client.post(f"/events/{self.call.id}/handle/")
+        self.assertEqual(r.status_code, 200)
+        self.call.refresh_from_db()
+        self.assertEqual(self.call.status, "handled")
+        self.assertIsNotNone(self.call.handled_at)
+        self.assertAlmostEqual(self.call.handled_at.date(), timezone.now().date())
+
 

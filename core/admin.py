@@ -19,5 +19,11 @@ class ServiceCallAdmin(admin.ModelAdmin):
     list_display = ("id", "table", "event_type", "created_at", "status")
     search_fields = ("table__restaurant__name", "event_type")
     list_filter = ("status", "created_at")
+    actions       = ["mark_handled"]           # <-- NEW
+
+    @admin.action(description="Mark selected calls as handled")
+    def mark_handled(self, request, queryset):
+        updated = queryset.update(status="handled", handled_at=timezone.now())
+        self.message_user(request, f"{updated} call(s) marked handled ✅")
 
 

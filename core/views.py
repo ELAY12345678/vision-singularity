@@ -3,6 +3,8 @@ from rest_framework.response import Response
 from rest_framework import status, generics, permissions
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.decorators import api_view, parser_classes, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from django.utils import timezone
 from .models import Restaurant, Table, ServiceCall
 from .serializers import RestaurantSerializer, TableSerializer, ServiceCallSerializer
 from django.shortcuts import get_object_or_404
@@ -46,12 +48,12 @@ class RestaurantDetail(APIView):
 class TableList(generics.ListAPIView):                 # GET only
     queryset           = Table.objects.all()
     serializer_class   = TableSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]  # Temporalmente sin autenticación
 
 class ServiceCallListCreate(generics.ListCreateAPIView):
     queryset = ServiceCall.objects.all()
     serializer_class = ServiceCallSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]  # Temporalmente sin autenticación
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['status']  # allow filtering by status
 
@@ -76,7 +78,7 @@ class ServiceCallListCreate(generics.ListCreateAPIView):
 class ServiceCallDetail(generics.RetrieveUpdateAPIView):
     queryset = ServiceCall.objects.all()
     serializer_class = ServiceCallSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]  # Temporalmente sin autenticación
 
     def patch(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -106,3 +108,28 @@ def cv_ingest(request):
                         status=status.HTTP_201_CREATED)
 
     return Response({"status": "no gesture"}, status=status.HTTP_202_ACCEPTED)
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def handle_service_call(request, pk):
+    """
+    POST /events/<id>/handle/
+    """
+    sc = get_object_or_404(ServiceCall, pk=pk)
+    sc.status = "handled"
+    sc.handled_at = timezone.now()
+    sc.save()
+    # Notify waiters so UI removes it
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        "waiters_group",
+        {
+            "type": "send_service_call",
+            "content": {
+                "id": sc.id,
+                "status": sc.status,
+                "handled_at": str(sc.handled_at),
+            },
+        },
+    )
+    return Response({"ok": True})
