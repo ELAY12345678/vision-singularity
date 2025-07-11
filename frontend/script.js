@@ -475,7 +475,8 @@ async function fetchAPI(endpoint, options = {}) {
     const defaultOptions = {
         headers: {
             'Content-Type': 'application/json',
-            ...(authToken && { 'Authorization': `Bearer ${authToken}` })
+            // Temporalmente sin autenticación para desarrollo
+            // ...(authToken && { 'Authorization': `Bearer ${authToken}` })
         }
     };
     

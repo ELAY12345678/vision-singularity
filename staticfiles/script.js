@@ -10,6 +10,7 @@ let notificationUpdateTimeout = null;
 
 // Inicialización
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 DOM cargado, iniciando aplicación...');
     initializeApp();
     setupNavigation();
     setupWebSocket();
@@ -18,6 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Inicializar aplicación
 function initializeApp() {
+    console.log('🔧 Inicializando aplicación...');
     // Verificar si hay token guardado
     authToken = localStorage.getItem('authToken');
     
@@ -36,6 +38,7 @@ function initializeApp() {
     if (notificationLink) {
         notificationLink.classList.add('active');
     }
+    console.log('✅ Aplicación inicializada');
 }
 
 // Configurar navegación
@@ -106,10 +109,16 @@ function showSection(sectionName) {
 
 // Cargar datos iniciales
 function loadInitialData() {
+    console.log('📊 Iniciando carga de datos iniciales...');
+    console.log('📋 Llamando a loadNotifications...');
     loadNotifications(true); // Mostrar spinner en carga inicial
+    console.log('🗺️ Llamando a loadTables...');
     loadTables();
+    console.log('👥 Llamando a loadUsers...');
     loadUsers();
+    console.log('📈 Llamando a loadStats...');
     loadStats();
+    console.log('✅ Datos iniciales cargados');
 }
 
 // Cargar datos específicos de sección
@@ -224,33 +233,43 @@ function updateNotificationBadge() {
 
 // Cargar notificaciones
 function loadNotifications(showLoading = false) {
+    console.log('🔄 Iniciando carga de notificaciones...');
     const tbody = document.getElementById('notifications-table-body');
+    console.log('📋 Tabla encontrada:', tbody);
     
     // Solo mostrar spinner si es la primera carga o se indica explícitamente
     if (showLoading || tbody.innerHTML.trim() === '') {
         tbody.innerHTML = '<tr><td colspan="6" class="loading"><div class="spinner"></div></td></tr>';
+        console.log('⏳ Mostrando spinner...');
     }
     
+    console.log('📡 Haciendo petición a /events/...');
     fetchAPI('/events/')
         .then(data => {
+            console.log('✅ Datos recibidos:', data);
+            console.log('📊 Número de notificaciones:', data.length);
             renderNotifications(data);
         })
         .catch(error => {
-            console.error('Error cargando notificaciones:', error);
+            console.error('❌ Error cargando notificaciones:', error);
             tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #dc3545;">Error cargando datos</td></tr>';
         });
 }
 
 // Renderizar notificaciones
 function renderNotifications(notifications) {
+    console.log('🎨 Renderizando notificaciones...', notifications);
     const tbody = document.getElementById('notifications-table-body');
+    console.log('📋 Elemento tbody:', tbody);
     
     if (notifications.length === 0) {
+        console.log('⚠️ No hay notificaciones para mostrar');
         tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #6c757d;">No hay notificaciones</td></tr>';
         return;
     }
     
-    tbody.innerHTML = notifications.map(notification => `
+    console.log('📝 Generando HTML para', notifications.length, 'notificaciones');
+    const htmlContent = notifications.map(notification => `
         <tr>
             <td>${notification.id}</td>
             <td>Mesa ${notification.table}</td>
@@ -274,6 +293,10 @@ function renderNotifications(notifications) {
             </td>
         </tr>
     `).join('');
+    
+    console.log('✅ HTML generado, aplicando a tabla');
+    tbody.innerHTML = htmlContent;
+    console.log('🎉 Notificaciones renderizadas exitosamente');
 }
 
 // Marcar como atendida
@@ -471,21 +494,33 @@ function loadChart() {
 // Función auxiliar para hacer peticiones a la API
 async function fetchAPI(endpoint, options = {}) {
     const url = `${API_BASE_URL}${endpoint}`;
+    console.log('🌐 Haciendo petición a:', url);
     
     const defaultOptions = {
         headers: {
             'Content-Type': 'application/json',
-            ...(authToken && { 'Authorization': `Bearer ${authToken}` })
+            // Temporalmente sin autenticación para desarrollo
+            // ...(authToken && { 'Authorization': `Bearer ${authToken}` })
         }
     };
     
-    const response = await fetch(url, { ...defaultOptions, ...options });
+    console.log('📋 Opciones de petición:', { ...defaultOptions, ...options });
     
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+    try {
+        const response = await fetch(url, { ...defaultOptions, ...options });
+        console.log('📡 Respuesta recibida:', response.status, response.statusText);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('📦 Datos parseados:', data);
+        return data;
+    } catch (error) {
+        console.error('❌ Error en fetchAPI:', error);
+        throw error;
     }
-    
-    return response.json();
 }
 
 // Formatear tipo de evento
